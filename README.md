@@ -23,7 +23,7 @@ For readers who want to obtain raw/result data, locate data file, then download 
 
 Or you can download whole respository with one of following ways:
 
-* Clone this repository with `git clone https://github.com/BioinfoDriver/CnSubclonalityProject.git`
+* Clone this repository with `git clone https://github.com/ZhangYajing93/PanCanTmmProject.git`
 
 * Download whole respository by clicking `Download` button at top right of url page https://github.com/ZhangYajing93/PanCanTmmProject
 
