@@ -17,7 +17,7 @@ For readers who want to obtain raw/result data, locate data file, then download 
 
 * In Github, download file by clicking either `Download` button or `Raw` button at corresponding data page
 
-* Use linux command `wget` or `curl`, fo example, you can download PCNA gene sets by
+* Use linux command `wget` or `curl`, fo example, you can download TMM gene sets by
 
   wget `https://github.com/BioinfoDriver/CnSubclonalityProject/tree/main/data/PCNA_Signature.txt`
 
