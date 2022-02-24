@@ -1,6 +1,6 @@
 # PanCanTmmProject
 
-Intra-tumoral heterogeneity (ITH) of somatic copy number alterations (ITH-SCNAs) in pan-cancer.
+Telomere maintenance mechanism (TMM) dysregulation serves as an early predictor of adjuvant therapy response and a potential therapeutic target in human cancers
 
 ## Overview
 
