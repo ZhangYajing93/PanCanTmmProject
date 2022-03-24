@@ -1,12 +1,12 @@
 ## TMScore Survival Analysis
-survivalSigBreastLung<-read.table('/pub5/xiaoyun/Jobs/J22/ZYJ2020/Telomere/NewRoute/ProbeCalculate/survival/BreastLungSigThreeDatabase/survivalSigBreastLung.txt',
+survivalSigBreastLung<-read.table('/data/survivalSigBreastLung.txt',
                                   row.names = 1,header = TRUE,sep = '\t')
+load('/data/clinicalSurvival.RData')
+load('/data/expTMMsurv.RData')
 
-load('/pub5/xiaoyun/Jobs/J22/ZYJ2020/Telomere/NewRoute/ResourceData/expTMMsurvAllRaw.RData')
-load('/pub5/xiaoyun/Jobs/J22/ZYJ2020/Telomere/NewRoute/ResourceData/clinicalSurvivalUse.RData')
-clinicalSurvivalUse<-clinicalSurvivalUse[c(colnames(expTMMsurvAllRaw$lung),colnames(expTMMsurvAllRaw$breast),
-                                           colnames(expTMMsurvAllRaw$colon),colnames(expTMMsurvAllRaw$kidney),
-                                           colnames(expTMMsurvAllRaw$stomach)),]
+clinicalSurvivalUse<-clinicalSurvivalUse[c(colnames(expTMMsurv$lung),colnames(expTMMsurv$breast),
+                                           colnames(expTMMsurv$colon),colnames(expTMMsurv$kidney),
+                                           colnames(expTMMsurv$stomach)),]
 
 TMSprobeWeightedSum<-function(TMSgenetable,expdataset){
   upprobe<-rownames(TMSgenetable[TMSgenetable$dysregulate %in% c('up'),])
@@ -21,7 +21,7 @@ TMSprobeWeightedSum<-function(TMSgenetable,expdataset){
   names(TMScoreWeightSum)<-names(upTMScoreSum)
   return(TMScoreWeightSum)
 }
-TMScore<-TMSprobeWeightedSum(survivalSigBreastLung,expTMMsurvAllRaw)
+TMScore<-TMSprobeWeightedSum(survivalSigBreastLung,expTMMsurv)
 
 
 SurvDataThreeGroupAll<-function(clinical.data,surv.type,sample.score){
@@ -75,9 +75,9 @@ surcliDMFSTertilesWeight<-SurvDataThreeGroupAll(clinicalSurvivalUse,'DMFS',TMSco
 surcliMFSTertilesWeight<-SurvDataThreeGroupAll(clinicalSurvivalUse,'MFS',TMScore)
 surcliDSSTertilesWeight<-SurvDataThreeGroupAll(clinicalSurvivalUse,'DSS',TMScore)
 
-source(file = '/pub5/xiaoyun/Jobs/J22/ZYJ2020/Rscript/km_survival_plot.R')
+source(file = '/code/km_survival_plot.R')
 
-setwd('/pub5/xiaoyun/Jobs/J22/ZYJ2020/Telomere/NewRoute/ProbeCalculate/survival/BreastLungSigThreeDatabase/survival/survAllRaw')
+setwd('/result')
 
 for (i in 1:length(surcliOSTertilesWeight)) {
   pdf(file = paste0('OS',names(surcliOSTertilesWeight)[i],'.pdf'))
@@ -155,81 +155,10 @@ for (i in 1:length(surcliDSSTertilesWeight)) {
 
 ############################################ Cox regression analysis#######################################################
 ################ breast cancer ################ 
-source('/pub5/xiaoyun/Jobs/J22/EvoClass2.0/Section3/RScripts/Cox.function.R')
-clinicalSurvivalUse<-clinicalSurvivalUse[c(colnames(expTMMsurvAllRaw$lung),colnames(expTMMsurvAllRaw$breast),
-                                           colnames(expTMMsurvAllRaw$colon),colnames(expTMMsurvAllRaw$kidney),
-                                           colnames(expTMMsurvAllRaw$stomach)),]
-clinicalSurvivalUse$HER2_status[clinicalSurvivalUse$HER2_status %in% c('1','over-expression','HER2-positive breast cancer','HER2 breast cancer tumor','positive','pos','yes','Positive')]<-'pos'
-clinicalSurvivalUse$HER2_status[clinicalSurvivalUse$HER2_status %in% c('0','normal','negative','neg','no','Negative')]<-'neg'
-
-clinicalSurvivalUse$ER_status[clinicalSurvivalUse$ER_status %in% c('1','positive','pos','Positive')]<- 'pos'
-clinicalSurvivalUse$ER_status[clinicalSurvivalUse$ER_status %in% c('0','negative','neg','Negative')]<- 'neg'
-clinicalSurvivalUse$ER_status[clinicalSurvivalUse$ER_status %in% c('EV')]<- NA
-
-clinicalSurvivalUse$PgR_status[clinicalSurvivalUse$PgR_status %in% c('1','positive','pos','Positive')]<- 'pos'
-clinicalSurvivalUse$PgR_status[clinicalSurvivalUse$PgR_status %in% c('0','negative','neg','Negative')]<- 'neg'
-clinicalSurvivalUse$PgR_status[clinicalSurvivalUse$PgR_status %in% c('EV')]<- NA
-
-clinicalSurvivalUse$node_status[clinicalSurvivalUse$node_status %in% c('1','6','2','11','8','10','7','20','4','5','3','14','22',
-                                                                       '16','15','17','13','9','18','28','12','positive','pos','20')]<-'pos'
-clinicalSurvivalUse$node_status[clinicalSurvivalUse$node_status %in% c('0','negative')]<-'neg'
-
-clinicalSurvivalUse$age<-as.numeric(clinicalSurvivalUse$age)
-clinicalSurvivalUse$OS_status<-as.numeric(clinicalSurvivalUse$OS_status)
-clinicalSurvivalUse$OS_month<-as.numeric(clinicalSurvivalUse$OS_month)
-clinicalSurvivalUse$DFS_status<-as.numeric(clinicalSurvivalUse$DFS_status)
-clinicalSurvivalUse$DFS_month<-as.numeric(clinicalSurvivalUse$DFS_month)
-clinicalSurvivalUse$RFS_status<-as.numeric(clinicalSurvivalUse$RFS_status)
-clinicalSurvivalUse$RFS_month<-as.numeric(clinicalSurvivalUse$RFS_month)
-clinicalSurvivalUse$DMFS_status<-as.numeric(clinicalSurvivalUse$DMFS_status)
-clinicalSurvivalUse$DMFS_month<-as.numeric(clinicalSurvivalUse$DMFS_month)
-
-
-clinicalSurvivalUse$molecular_subtype[clinicalSurvivalUse$molecular_subtype %in% c('HER2','HER2-enriched','HER2-positive breast cancer','HER2 breast cancer tumor','ERBB2','Her2')]<-'HER2'
-clinicalSurvivalUse$molecular_subtype[clinicalSurvivalUse$molecular_subtype %in% c('LumB','Luminal B','LuminalB')]<-'LumB'
-clinicalSurvivalUse$molecular_subtype[clinicalSurvivalUse$molecular_subtype %in% c('Basal','Basal-like subtype','triple negative breast cancer (TNBC) patient','triple negative breast cancer','TNBC')]<-'Basal'
-clinicalSurvivalUse$molecular_subtype[clinicalSurvivalUse$molecular_subtype %in% c('LumA','Luminal A','LuminalA')]<-'LumA'
-clinicalSurvivalUse$molecular_subtype[clinicalSurvivalUse$molecular_subtype %in% c('Normal','Normal breast-like')]<-'Normal'
-clinicalSurvivalUse$molecular_subtype[clinicalSurvivalUse$molecular_subtype %in% c('Uncla','--','Healthy')]<-NA
-
-clinicalSurvivalUse$grade[clinicalSurvivalUse$grade %in% c('1','G1','WELL DIFF','I')]<-'G1'
-clinicalSurvivalUse$grade[clinicalSurvivalUse$grade %in% c('2','G2','MOD DIFF','II')]<-'G2'
-clinicalSurvivalUse$grade[clinicalSurvivalUse$grade %in% c('3','G3','POORLY DIFF','III')]<-'G3'
-clinicalSurvivalUse$grade[clinicalSurvivalUse$grade %in% c('4','IV')]<-'G4'
-clinicalSurvivalUse$grade[clinicalSurvivalUse$grade %in% c('Unknown')]<-NA
-
-clinicalSurvivalUse$stage[clinicalSurvivalUse$stage %in% c('1','1a','1b','IA','IB','I','Stage 1')]<-'I'
-clinicalSurvivalUse$stage[clinicalSurvivalUse$stage %in% c('2','2b','2a','II','IIB','IIA','Stage 2')]<-'II'
-clinicalSurvivalUse$stage[clinicalSurvivalUse$stage %in% c('3','3a','3b','IIIA','IIIB','IIIC','Stage 3','III')]<-'III'
-clinicalSurvivalUse$stage[clinicalSurvivalUse$stage %in% c('4','IV','Stage 4')]<-'IV'
-clinicalSurvivalUse$stage[clinicalSurvivalUse$stage %in% c('N/A','0','Unknown','Recurrence','Unkown')]<-NA
-
-clinicalSurvivalUse$stage_T[clinicalSurvivalUse$stage_T %in% c('T1','T1b','T1a','T1c','1','1c','pT1','pT1b','pT1a')]<-'T1'
-clinicalSurvivalUse$stage_T[clinicalSurvivalUse$stage_T %in% c('T2','T2a','T2b','2','pT2')]<-'T2'
-clinicalSurvivalUse$stage_T[clinicalSurvivalUse$stage_T %in% c('T3','3','pT3','pT3b','pT3a')]<-'T3'
-clinicalSurvivalUse$stage_T[clinicalSurvivalUse$stage_T %in% c('T4','4','pT4')]<-'T4'
-clinicalSurvivalUse$stage_T[clinicalSurvivalUse$stage_T %in% c('T0','Tis','0')]<-'T0'
-clinicalSurvivalUse$stage_T[clinicalSurvivalUse$stage_T %in% c('NTL','TX','N/A','pTX')]<-NA
-
-clinicalSurvivalUse$stage_N[clinicalSurvivalUse$stage_N %in% c('N1','N1a','N1mi','N1b','N1c','N1biii','N1bi','1','pN1')]<-'N1'
-clinicalSurvivalUse$stage_N[clinicalSurvivalUse$stage_N %in% c('N2','N2a','2','pN2')]<-'N2'
-clinicalSurvivalUse$stage_N[clinicalSurvivalUse$stage_N %in% c('N3','N3b','N3a','3')]<-'N3'
-clinicalSurvivalUse$stage_N[clinicalSurvivalUse$stage_N %in% c('N0','N0 (i-)','N0 (i+)','0','pN0')]<-'N0'
-clinicalSurvivalUse$stage_N[clinicalSurvivalUse$stage_N %in% c('NTL','NX','N/A','X','N+','pNX')]<-NA
-
-clinicalSurvivalUse$stage_M[clinicalSurvivalUse$stage_M %in% c('M0','0')]<-'M0'
-clinicalSurvivalUse$stage_M[clinicalSurvivalUse$stage_M %in% c('M1','1')]<-'M1'
-clinicalSurvivalUse$stage_M[clinicalSurvivalUse$stage_M %in% c('MX','NTL','X','N/A')]<-NA
-
-clinicalSurvivalUse$MMR_status[clinicalSurvivalUse$MMR_status %in% c('N/A')]<-NA
-clinicalSurvivalUse$KRAS_mutation_status[clinicalSurvivalUse$KRAS_mutation_status %in% c('N/A')]<-NA
-clinicalSurvivalUse$P53_status[clinicalSurvivalUse$P53_status %in% c('N/A')]<-NA
-clinicalSurvivalUse$BRAF_mutation[clinicalSurvivalUse$BRAF_mutation %in% c('N/A')]<-NA
-clinicalSurvivalUse$CIN_status[clinicalSurvivalUse$CIN_status %in% c('N/A')]<-NA
-clinicalSurvivalUse$CIMP_status[clinicalSurvivalUse$CIMP_status %in% c('N/A')]<-NA
-
-clinicalSurvivalUse$smoking_status[clinicalSurvivalUse$smoking_status %in% c('1','Ever-smoker')]<-'1'
-clinicalSurvivalUse$smoking_status[clinicalSurvivalUse$smoking_status %in% c('0','Never-smoker')]<-'0'
+source('/code/Cox.function.R')
+clinicalSurvivalUse<-clinicalSurvivalUse[c(colnames(expTMMsurv$lung),colnames(expTMMsurv$breast),
+                                           colnames(expTMMsurv$colon),colnames(expTMMsurv$kidney),
+                                           colnames(expTMMsurv$stomach)),]
 
 clinicalSurvivalUse[clinicalSurvivalUse$cancer_type %in% c('lung'),'subtyping1'][clinicalSurvivalUse[clinicalSurvivalUse$cancer_type %in% c('lung'),'subtyping1'] %in% c('Squamous','SCC','squamous','SQC','Squamous Cell Carcinoma of Lung')]<-'LUSC'
 clinicalSurvivalUse[clinicalSurvivalUse$cancer_type %in% c('lung'),'subtyping1'][clinicalSurvivalUse[clinicalSurvivalUse$cancer_type %in% c('lung'),'subtyping1'] %in% c('Adenocarcinoma','ADC','adeno','LADC')]<-'LADC'
@@ -238,14 +167,11 @@ clinicalSurvivalUse[clinicalSurvivalUse$cancer_type %in% c('lung'),'subtyping1']
 clinicalSurvivalUse[clinicalSurvivalUse$cancer_type %in% c('lung'),'subtyping1'][clinicalSurvivalUse[clinicalSurvivalUse$cancer_type %in% c('lung'),'subtyping1'] %in% c('healthy','NTL')]<-'normal'
 
 
-load('/pub5/xiaoyun/Jobs/J22/ZYJ2020/Telomere/NewRoute/ProbeCalculate/survival/BreastLungSigThreeDatabase/survival/x.RData')
+load('/data/GSE39582_MSI.RData')
 clinicalSurvivalUse[clinicalSurvivalUse$GEO_number=='GSE39582','MSI_status']<-x$MSI_status
 clinicalSurvivalUse$MSI_status[clinicalSurvivalUse$MSI_status %in% c('N/A')]<-NA
 clinicalSurvivalUse$MSI_status[clinicalSurvivalUse$MSI_status %in% c('MSI','MSI_H')]<-'MSI'
 clinicalSurvivalUse$MSI_status[clinicalSurvivalUse$MSI_status %in% c('MSS')]<-'MSS'
-
-setwd('/pub5/xiaoyun/Jobs/J22/ZYJ2020/Telomere/NewRoute/ResourceData')
-save(clinicalSurvivalUse,file = 'clinicalSurvivalUse.RData')
 
 CancerSurv<-function(clinical.data,surv.type){
   clisur<-clinical.data[clinical.data$tissue_type %in% c('tumor'),]
@@ -269,9 +195,6 @@ names(cancerSurv)<-names(split(clinicalSurvivalUse,factor(clinicalSurvivalUse$ca
 cancerSurvOS<-lapply(cancerSurv, function(x){
   CancerSurv(x,'OS')
 })
-
-setwd('/pub5/xiaoyun/Jobs/J22/ZYJ2020/Telomere/NewRoute/ProbeCalculate/survival/BreastLungSigThreeDatabase/survival/survAllRaw/Cox')
-save(cancerSurvOS,file = 'cancerSurvOS.RData')
 
 ############### breast cancer OS Cox analysis
 #' @GSE20711 age grade molecular_subtype HER2_status ER_status node_status tumor_size TMScore
@@ -299,7 +222,7 @@ breastSurv$tumor_size1[breastSurv$tumor_size1 >2]<-'2'
 #' @ GSE20685
 a<-breastSurv[,c(1:5,6,15:17,19)]
 b<-na.omit(a)
-Cox.function(b$OS_month,b$OS_status,b,clinical.variate=c(6:ncol(b)))
+
 c<-cut(b$TMScore,quantile(b$TMScore,c(0,1/3,2/3,1)),labels = FALSE,include.lowest = TRUE)
 b$TMScore<-c
 b$TMScore<-as.character(b$TMScore)
@@ -367,8 +290,6 @@ cancerSurvDFS<-lapply(cancerSurv, function(x){
   CancerSurv(x,'DFS')
 })
 
-setwd('/pub5/xiaoyun/Jobs/J22/ZYJ2020/Telomere/NewRoute/ProbeCalculate/survival/BreastLungSigThreeDatabase/survival/survAllRaw/Cox')
-save(cancerSurvDFS,file = 'cancerSurvDFS.RData')
 
 ############### breast cancer DFS Cox analysis
 #' @GSE61304 age stage stage_T stage_N grade subtyping 'ER_status', PgR_status
@@ -389,7 +310,7 @@ breastSurv$Ki67_status[breastSurv$Ki67_status %in% c('1','pos')]<-'1'
 #' @： "GSE61304" "GSE31448" "GSE21653"
 a<-breastSurv[,c(1:5,6,8,11,14,15,20)]
 b<-na.omit(a)
-Cox.function(b$DFS_month,b$DFS_status,b,clinical.variate=c(6:ncol(b)))
+
 c<-cut(b$TMScore,quantile(b$TMScore,c(0,1/3,2/3,1)),labels = FALSE,include.lowest = TRUE)
 b$TMScore<-c
 b$TMScore<-as.character(b$TMScore)
@@ -461,8 +382,6 @@ cancerSurvRFS<-lapply(cancerSurv, function(x){
   CancerSurv(x,'RFS')
 })
 
-setwd('/pub5/xiaoyun/Jobs/J22/ZYJ2020/Telomere/NewRoute/ProbeCalculate/survival/BreastLungSigThreeDatabase/survival/survAllRaw/Cox')
-save(cancerSurvRFS,file = 'cancerSurvRFS.RData')
 
 ############### breast cancer RFS Cox analysis
 #' @GSE16391 age grade HER2_status','ER_status', PgR_status post_menopausal_status node_status tumor_size
@@ -499,7 +418,7 @@ breastSurv$tumor_size[621:837][breastSurv$tumor_size[621:837] > 2]<-'2'
 #' @ "GSE16391" "GSE9195"  "GSE6532"  "GSE88770"
 a<-breastSurv[,c(1:5,10,13,14,18,22)]
 b<-na.omit(a)
-Cox.function(b$RFS_month,b$RFS_status,b,clinical.variate=c(6:ncol(b)))
+
 c<-cut(b$TMScore,quantile(b$TMScore,c(0,1/3,2/3,1)),labels = FALSE,include.lowest = TRUE)
 b$TMScore<-c
 b$TMScore<-as.character(b$TMScore)
@@ -574,8 +493,6 @@ cancerSurvDMFS<-lapply(cancerSurv, function(x){
   CancerSurv(x,'DMFS')
 })
 
-setwd('/pub5/xiaoyun/Jobs/J22/ZYJ2020/Telomere/NewRoute/ProbeCalculate/survival/BreastLungSigThreeDatabase/survival/survAllRaw/Cox')
-save(cancerSurvDMFS,file = 'cancerSurvDMFS.RData')
 
 ############### breast cancer DMFS Cox analysis
 #' @GSE61304 age stage stage_T stage_N grade subtyping 'ER_status', PgR_status
@@ -599,7 +516,7 @@ breastSurv$tumor_size1[breastSurv$tumor_size1 > 2]<-'2'
 #' "GSE61304" "GSE20685"
 a<-breastSurv[,c(1:5,6,8,9,19)]
 b<-na.omit(a)
-Cox.function(b$DMFS_month,b$DMFS_status,b,clinical.variate=c(6:ncol(b)))
+
 c<-cut(b$TMScore,quantile(b$TMScore,c(0,1/3,2/3,1)),labels = FALSE,include.lowest = TRUE)
 b$TMScore<-c
 b$TMScore<-as.character(b$TMScore)
@@ -686,7 +603,7 @@ lungSurv$MYC[lungSurv$MYC %in% c('nd')]<-NA
 #' "GSE29013" "GSE37745" "GSE31210"
 a<-lungSurv[,c(1:5,6,7,8,12,13,20)]
 b<-na.omit(a)
-Cox.function(b$OS_month,b$OS_status,b,clinical.variate=c(6:ncol(b)))
+
 c<-cut(b$TMScore,quantile(b$TMScore,c(0,1/3,2/3,1)),labels = FALSE,include.lowest = TRUE)
 b$TMScore<-c
 b$TMScore<-as.character(b$TMScore)
@@ -770,7 +687,7 @@ lungSurv$MYC[lungSurv$MYC %in% c('nd')]<-NA
 #' "GSE37745" "GSE31210"
 a<-lungSurv[,c(1:5,6:8,12,20)]
 b<-na.omit(a)
-Cox.function(b$RFS_month,b$RFS_status,b,clinical.variate=c(6:ncol(b)))
+
 c<-cut(b$TMScore,quantile(b$TMScore,c(0,1/3,2/3,1)),labels = FALSE,include.lowest = TRUE)
 b$TMScore<-c
 b$TMScore<-as.character(b$TMScore)
@@ -836,7 +753,7 @@ ggsave(plot = Forestplot(d), filename='lungRFS.pdf')
 #'"GSE31210"
 a<-lungSurv[,c(1:5,6:8,13,14,15,16,17,20)]
 b<-na.omit(a)
-Cox.function(b$RFS_month,b$RFS_status,b,clinical.variate=c(6:ncol(b)))
+
 c<-cut(b$TMScore,quantile(b$TMScore,c(0,1/3,2/3,1)),labels = FALSE,include.lowest = TRUE)
 b$TMScore<-c
 b$TMScore<-as.character(b$TMScore)
@@ -924,7 +841,7 @@ colonSurv<-cancerSurvOS$colon[,c('cancer_type','GEO_number','geo_accession','OS_
 #'  "GSE39582" "GSE39084"
 a<-colonSurv[,c(1:5,6,7,9,15,22)]
 b<-na.omit(a)
-Cox.function(b$OS_month,b$OS_status,b,clinical.variate=c(6:ncol(b)))
+
 c<-cut(b$TMScore,quantile(b$TMScore,c(0,1/3,2/3,1)),labels = FALSE,include.lowest = TRUE)
 b$TMScore<-c
 b$TMScore<-as.character(b$TMScore)
@@ -998,7 +915,7 @@ colonSurv<-cancerSurvRFS$colon[,c('cancer_type','GEO_number','geo_accession','RF
 #'"GSE39582"
 a<-colonSurv[,c(1:5,6:8,12,13,14,15,17)]
 b<-na.omit(a)
-Cox.function(b$RFS_month,b$RFS_status,b,clinical.variate=c(6:ncol(b)))
+
 c<-cut(b$TMScore,quantile(b$TMScore,c(0,1/3,2/3,1)),labels = FALSE,include.lowest = TRUE)
 b$TMScore<-c
 b$TMScore<-as.character(b$TMScore)
@@ -1083,7 +1000,7 @@ stomachSurv$subtyping[stomachSurv$subtyping %in% c('diffuse type','diffuse','Dif
 stomachSurv$subtyping[stomachSurv$subtyping %in% c('intestinal type','intestinal','Intestinal')]<-'intestinal'
 stomachSurv$subtyping[stomachSurv$subtyping %in% c('mixed type','mixed','Mixed')]<-'mixed'
 stomachSurv$subtyping[stomachSurv$subtyping %in% c('unknown')]<-NA
-# stomachSurv$subtyping[stomachSurv$subtyping %in% c('mixed')]<-NA
+
 
 
 stomachSurv$MLH1_status[stomachSurv$MLH1_status %in% c('negative','Negative')]<-'neg'
@@ -1094,7 +1011,7 @@ stomachSurv$MLH1_status[stomachSurv$MLH1_status %in% c('partial loss')]<-NA
 #'  "GSE57303" "GSE62254"
 a<-stomachSurv[,c(1:5,6,7,8,9:11,13,18)]
 b<-na.omit(a)
-Cox.function(b$OS_month,b$OS_status,b,clinical.variate=c(6:ncol(b)))
+
 c<-cut(b$TMScore,quantile(b$TMScore,c(0,1/3,2/3,1)),labels = FALSE,include.lowest = TRUE)
 b$TMScore<-c
 b$TMScore<-as.character(b$TMScore)
